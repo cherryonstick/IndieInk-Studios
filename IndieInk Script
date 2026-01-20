@@ -14,7 +14,7 @@ local Window = Rayfield:CreateWindow({
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
 
    ConfigurationSaving = {
-      Enabled = true,
+      Enabled = false,
       FolderName = IndieInkcfg, -- Create a custom folder for your hub/game
       FileName = "IndieInk"
    },
@@ -40,12 +40,17 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("Main", "house")
 local MainSection = MainTab:CreateSection("Main")
 
-
+local Button = MainTab:CreateButton({
+   Name = "Button Example",
+   Callback = function()
+   -- The function that takes place when the button is pressed
+   end,
+})
 
 local Tab = Window:CreateTab("Mobility", "move")
 local Section = MobiltyTab:CreateSection("Mobilty")
 
-local SpeedSlider = MovementTab:CreateSlider({
+local SpeedSlider = MobilityTab:CreateSlider({
    Name = "Walk Speed",
    Range = {16, 250},          -- safe upper limit; go higher only if you test
    Increment = 5,
@@ -101,5 +106,12 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
    end
 end)
 
-local Tab = Window:CreateTab("Powerful", "bomb")
-local Section = PowerfulTab:CreateSection("Powerful")
+local PowerfulTab = Window:CreateTab("Powerful", "bomb")
+local PowerfulSection = PowerfulTab:CreateSection("Powerful")
+
+local Button = PowerfulTab:CreateButton({
+   Name = "Button Example",
+   Callback = function()
+   -- The function that takes place when the button is pressed
+   end,
+})
