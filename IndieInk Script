@@ -37,18 +37,13 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-if game.PlaceId ~= 16395296930 then
-   Rayfield:Notify({
-      Title = "Wrong Game!",
-      Content = "This script is for Noob Exterminators only.",
-      Duration = 6
-   })
-   return
-end
+local MainTab = Window:CreateTab("Main", "house")
+local MainSection = MainTab:CreateSection("Main")
 
-local Tab = Window:CreateTab("Main", "house")
+
 
 local Tab = Window:CreateTab("Mobility", "move")
+local Section = MobiltyTab:CreateSection("Mobilty")
 
 local SpeedSlider = MovementTab:CreateSlider({
    Name = "Walk Speed",
@@ -107,3 +102,4 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 local Tab = Window:CreateTab("Powerful", "bomb")
+local Section = PowerfulTab:CreateSection("Powerful")
