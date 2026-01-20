@@ -37,10 +37,73 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
+if game.PlaceId ~= 16395296930 then
+   Rayfield:Notify({
+      Title = "Wrong Game!",
+      Content = "This script is for Noob Exterminators only.",
+      Duration = 6
+   })
+   return
+end
+
 local Tab = Window:CreateTab("Main", "house")
 
 local Tab = Window:CreateTab("Mobility", "move")
 
-local Tab = Window:CreateTab("Powerful", "bomb")
+local SpeedSlider = MovementTab:CreateSlider({
+   Name = "Walk Speed",
+   Range = {16, 250},          -- safe upper limit; go higher only if you test
+   Increment = 5,
+   Suffix = "Studs/s",
+   CurrentValue = 50,
+   Flag = "WalkSpeed_NoobExt", -- unique flag for config saving
+   Callback = function(Value)
+      DesiredSpeed = Value
+      
+      -- Step 1: Disable any existing WalkSpeed change listeners (very common bypass)
+      local humanoid = game.Players.LocalPlayer.Character 
+         and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+      
+      if humanoid then
+         for _, connection in pairs(getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed"))) do
+            connection:Disable()  -- kills most resetters
+         end
+      end
+      
+      -- Optional extra: try to kill any __index hook spoofing (advanced but rare in indie games)
+      -- Comment out if it errors or causes issues
+      -- pcall(function()
+      --    local mt = getrawmetatable(game)
+      --    local old_index = mt.__index
+      --    setreadonly(mt, false)
+      --    mt.__index = function(self, key)
+      --       if self == humanoid and key == "WalkSpeed" then
+      --          return DesiredSpeed  -- spoof read back to your value
+      --       end
+      --       return old_index(self, key)
+      --    end
+      --    setreadonly(mt, true)
+      -- end)
+   end,
+})
+
+-- Step 2: Force-apply speed every frame (bypasses most reset loops)
+game:GetService("RunService").Heartbeat:Connect(function()
+   local character = game.Players.LocalPlayer.Character
+   if not character then return end
+   
+   local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+   if humanoid and humanoid.WalkSpeed ~= DesiredSpeed then
+      humanoid.WalkSpeed = DesiredSpeed
+   end
+end)
+
+-- Re-apply on character respawn (important!)
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+   local humanoid = char:WaitForChild("Humanoid", 5)
+   if humanoid then
+      humanoid.WalkSpeed = DesiredSpeed
+   end
+end)
 
 local Tab = Window:CreateTab("Powerful", "bomb")
