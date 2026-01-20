@@ -40,58 +40,52 @@ local Window = Rayfield:CreateWindow({
 local Tab = Window:CreateTab("Mobility", "move")
 local Section = MobiltyTab:CreateSection("Mobilty")
 
-local SpeedSlider = MobilityTab:CreateSlider({
-   Name = "Walk Speed",
-   Range = {16, 250},          -- safe upper limit; go higher only if you test
-   Increment = 5,
-   Suffix = "Studs/s",
+local Slider = MobilityTab:CreateSlider({
+   Name = "Walkspeed changer",
+   Range = {16, 200},          -- start at normal 16; 200 is aggressive but testable (higher = more detectable)
+   Increment = 10,
+   Suffix = "Speed",
    CurrentValue = 50,
-   Flag = "WalkSpeed_NoobExt", -- unique flag for config saving
+   Flag = "WalkSpeedChanger",  -- unique flag for saving config
    Callback = function(Value)
-      DesiredSpeed = Value
-      
-      -- Step 1: Disable any existing WalkSpeed change listeners (very common bypass)
-      local humanoid = game.Players.LocalPlayer.Character 
-         and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-      
+      DesiredSpeed = Value  -- store the slider value
+
+      -- Bypass part 1: Disable common AC listeners on WalkSpeed changes
+      local player = game.Players.LocalPlayer
+      local char = player.Character or player.CharacterAdded:Wait()
+      local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+
       if humanoid then
+         -- Kill any connections watching for speed changes
          for _, connection in pairs(getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed"))) do
-            connection:Disable()  -- kills most resetters
+            connection:Disable()  -- this often breaks simple reset scripts
          end
       end
-      
-      -- Optional extra: try to kill any __index hook spoofing (advanced but rare in indie games)
-      -- Comment out if it errors or causes issues
-      -- pcall(function()
-      --    local mt = getrawmetatable(game)
-      --    local old_index = mt.__index
-      --    setreadonly(mt, false)
-      --    mt.__index = function(self, key)
-      --       if self == humanoid and key == "WalkSpeed" then
-      --          return DesiredSpeed  -- spoof read back to your value
-      --       end
-      --       return old_index(self, key)
-      --    end
-      --    setreadonly(mt, true)
-      -- end)
    end,
 })
 
--- Step 2: Force-apply speed every frame (bypasses most reset loops)
+-- Bypass part 2: Force the speed every single frame
 game:GetService("RunService").Heartbeat:Connect(function()
-   local character = game.Players.LocalPlayer.Character
-   if not character then return end
-   
-   local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+   local char = game.Players.LocalPlayer.Character
+   if not char then return end
+
+   local humanoid = char:FindFirstChildWhichIsA("Humanoid")
    if humanoid and humanoid.WalkSpeed ~= DesiredSpeed then
       humanoid.WalkSpeed = DesiredSpeed
    end
 end)
 
--- Re-apply on character respawn (important!)
-game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
-   local humanoid = char:WaitForChild("Humanoid", 5)
+-- Re-apply when you respawn (very important!)
+game.Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
+   local humanoid = newChar:WaitForChild("Humanoid", 5)
    if humanoid then
       humanoid.WalkSpeed = DesiredSpeed
    end
 end)
+
+-- Optional welcome note so you know it loaded
+Rayfield:Notify({
+   Title = "Speed Changer Ready",
+   Content = "Slide in Mobility tab — test low first (50–80) to avoid detection.",
+   Duration = 5
+})
