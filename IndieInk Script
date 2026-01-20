@@ -2,69 +2,73 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "IndieInk Noob Exterminators",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 0,
    LoadingTitle = "Loading non brainrot games",
    LoadingSubtitle = "Join our discord!",
-   ShowText = "hi", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   ShowText = "hi",
+   Theme = "Default",
 
-   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+   ToggleUIKeybind = "K",
 
    DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+   DisableBuildWarnings = false,
 
    ConfigurationSaving = {
       Enabled = false,
-      FolderName = IndieInkcfg, -- Create a custom folder for your hub/game
+      FolderName = "IndieInkCfg",           -- fixed: now a string
       FileName = "IndieInk"
    },
 
    Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "https://discord.gg/2CPW6seNNv", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Enabled = true,
+      Invite = "2CPW6seNNv",               -- fixed: only code, no https://discord.gg/
+      RememberJoins = true
    },
 
-   KeySystem = false, -- Set this to true to use our key system
+   KeySystem = false,
    KeySettings = {
       Title = "Untitled",
       Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"Hello"}
    }
 })
 
-local Tab = Window:CreateTab("Mobility", "move")
-local Section = MobiltyTab:CreateSection("Mobilty")
+-- Mobility Tab
+local MobilityTab = Window:CreateTab("Mobility", "move")
+
+-- Section inside the tab
+local Section = MobilityTab:CreateSection("Mobility")
+
+local DesiredSpeed = 50
 
 local Slider = MobilityTab:CreateSlider({
    Name = "Walkspeed changer",
-   Range = {16, 200},          -- start at normal 16; 200 is aggressive but testable (higher = more detectable)
+   Range = {16, 200},
    Increment = 10,
    Suffix = "Speed",
    CurrentValue = 50,
-   Flag = "WalkSpeedChanger",  -- unique flag for saving config
+   Flag = "WalkSpeedChanger",
    Callback = function(Value)
-      DesiredSpeed = Value  -- store the slider value
+      DesiredSpeed = Value
 
-      -- Bypass part 1: Disable common AC listeners on WalkSpeed changes
+      -- Attempt to disable common anti-cheat listeners
       local player = game.Players.LocalPlayer
       local char = player.Character or player.CharacterAdded:Wait()
       local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
       if humanoid then
-         -- Kill any connections watching for speed changes
          for _, connection in pairs(getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed"))) do
-            connection:Disable()  -- this often breaks simple reset scripts
+            connection:Disable()
          end
       end
    end,
 })
 
--- Bypass part 2: Force the speed every single frame
+-- Force speed every frame (main bypass method)
 game:GetService("RunService").Heartbeat:Connect(function()
    local char = game.Players.LocalPlayer.Character
    if not char then return end
@@ -75,17 +79,10 @@ game:GetService("RunService").Heartbeat:Connect(function()
    end
 end)
 
--- Re-apply when you respawn (very important!)
+-- Re-apply on respawn
 game.Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
    local humanoid = newChar:WaitForChild("Humanoid", 5)
    if humanoid then
       humanoid.WalkSpeed = DesiredSpeed
    end
 end)
-
--- Optional welcome note so you know it loaded
-Rayfield:Notify({
-   Title = "Speed Changer Ready",
-   Content = "Slide in Mobility tab — test low first (50–80) to avoid detection.",
-   Duration = 5
-})
