@@ -37,16 +37,6 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-local MainTab = Window:CreateTab("Main", "house")
-local MainSection = MainTab:CreateSection("Main")
-
-local Button = MainTab:CreateButton({
-   Name = "Button Example",
-   Callback = function()
-   -- The function that takes place when the button is pressed
-   end,
-})
-
 local Tab = Window:CreateTab("Mobility", "move")
 local Section = MobiltyTab:CreateSection("Mobilty")
 
@@ -105,13 +95,3 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
       humanoid.WalkSpeed = DesiredSpeed
    end
 end)
-
-local PowerfulTab = Window:CreateTab("Powerful", "bomb")
-local PowerfulSection = PowerfulTab:CreateSection("Powerful")
-
-local Button = PowerfulTab:CreateButton({
-   Name = "Button Example",
-   Callback = function()
-   -- The function that takes place when the button is pressed
-   end,
-})
