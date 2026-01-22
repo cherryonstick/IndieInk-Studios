@@ -67,3 +67,65 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
    local hum = char:WaitForChild("Humanoid", 5)
    if hum then hum.WalkSpeed = DesiredSpeed end
 end)
+
+local FlyEnabled = false
+local FlySpeed = 30
+
+MobilityTab:CreateToggle({
+   Name = "Fly (WASD + Space/Shift)",
+   CurrentValue = false,
+   Flag = "FlyToggle",
+   Callback = function(Value)
+      FlyEnabled = Value
+      local char = game.Players.LocalPlayer.Character
+      if not char then return end
+      local root = char:FindFirstChild("HumanoidRootPart")
+      if not root then return end
+
+      if Value then
+         -- Create BodyVelocity (standard hub method)
+         local bv = Instance.new("BodyVelocity")
+         bv.Name = "FlyBV"
+         bv.MaxForce = Vector3.new(4000, 4000, 4000)
+         bv.Velocity = Vector3.new(0, 0, 0)
+         bv.Parent = root
+
+         -- Fly loop (runs only when enabled)
+         spawn(function()
+            repeat
+               local cam = workspace.CurrentCamera
+               local uis = game:GetService("UserInputService")
+               local moveVec = Vector3.new(0, 0, 0)
+
+               -- WASD movement
+               if uis:IsKeyDown(Enum.KeyCode.W) then moveVec = moveVec + cam.CFrame.LookVector end
+               if uis:IsKeyDown(Enum.KeyCode.S) then moveVec = moveVec - cam.CFrame.LookVector end
+               if uis:IsKeyDown(Enum.KeyCode.A) then moveVec = moveVec - cam.CFrame.RightVector end
+               if uis:IsKeyDown(Enum.KeyCode.D) then moveVec = moveVec + cam.CFrame.RightVector end
+
+               -- Vertical
+               local vert = (uis:IsKeyDown(Enum.KeyCode.Space) and 1 or 0) - (uis:IsKeyDown(Enum.KeyCode.LeftShift) and 1 or 0)
+
+               bv.Velocity = (moveVec.Unit * FlySpeed) + Vector3.new(0, vert * FlySpeed, 0)
+               game:GetService("RunService").RenderStepped:Wait()
+            until not FlyEnabled or not root.Parent
+            bv:Destroy()  -- Clean up
+         end)
+      else
+         -- Disable
+         if root:FindFirstChild("FlyBV") then root.FlyBV:Destroy() end
+      end
+   end,
+})
+
+MobilityTab:CreateSlider({
+   Name = "Fly Speed",
+   Range = {16, 50},
+   Increment = 2,
+   Suffix = "spd",
+   CurrentValue = 30,
+   Flag = "FlySpeed",
+   Callback = function(Value)
+      FlySpeed = Value
+   end,
+})
