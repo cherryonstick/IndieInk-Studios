@@ -15,13 +15,13 @@ local Window = Rayfield:CreateWindow({
 
    ConfigurationSaving = {
       Enabled = false,
-      FolderName = "IndieInkCfg",
+      FolderName = "IndieInkCfg",           -- fixed: now a string
       FileName = "IndieInk"
    },
 
    Discord = {
       Enabled = true,
-      Invite = "2CPW6seNNv",
+      Invite = "2CPW6seNNv",               -- fixed: only code, no https://discord.gg/
       RememberJoins = true
    },
 
@@ -37,56 +37,33 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
--- Optional: only run in your target game (remove if testing elsewhere)
-if game.PlaceId ~= 16395296930 then
-   Rayfield:Notify({
-      Title = "Note",
-      Content = "Script loaded — best used in Noob Exterminators or your own place.",
-      Duration = 5
-   })
-end
-
--- Welcome
-Rayfield:Notify({
-   Title = "IndieInk Ready!",
-   Content = "Press K to open UI → Mobility tab",
-   Duration = 5
-})
-
 -- Mobility Tab
 local MobilityTab = Window:CreateTab("Mobility", "move")
 
--- Section
-local Section = MobilityTab:CreateSection("Movement Controls")
+-- Section inside the tab
+local Section = MobilityTab:CreateSection("Mobility")
 
--- Simple Walk Speed slider (no bypasses — just normal change)
-local Slider = MobilityTab:CreateSlider({
-   Name = "Walkspeed changer",
-   Range = {16, 100},           -- safe & reasonable range
-   Increment = 5,
-   Suffix = "Speed",
-   CurrentValue = 16,           -- default Roblox walk speed
-   Flag = "WalkSpeedChanger",
+local DesiredSpeed = 16
+
+MobilityTab:CreateSlider({
+   Name = "Walkspeed",
+   Range = {16, 75},
+   Increment = 1,
+   Suffix = "studs/s",
+   CurrentValue = 16,
+   Flag = "WalkSpeed",
    Callback = function(Value)
-      local player = game.Players.LocalPlayer
-      local char = player.Character
+      DesiredSpeed = Value
+      local char = game.Players.LocalPlayer.Character
       if char then
-         local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-         if humanoid then
-            humanoid.WalkSpeed = Value
-         end
+         local hum = char:FindFirstChildWhichIsA("Humanoid")
+         if hum then hum.WalkSpeed = Value end
       end
    end,
 })
 
--- Optional: re-apply on respawn (harmless)
+-- Re-apply on respawn (harmless)
 game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
-   local humanoid = char:WaitForChild("Humanoid", 5)
-   if humanoid then
-      -- You can re-set to saved value if you want (via Rayfield:GetFlag)
-      humanoid.WalkSpeed = 16  -- or Slider.CurrentValue if you store it
-   end
+   local hum = char:WaitForChild("Humanoid", 5)
+   if hum then hum.WalkSpeed = DesiredSpeed end
 end)
-
--- Test label so you know tabs loaded
-MobilityTab:CreateLabel("Slider ready — try changing speed!")
